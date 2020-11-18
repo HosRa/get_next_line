@@ -6,10 +6,9 @@
 /*   By: thallard <thallard@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/11/17 10:21:29 by thallard          #+#    #+#             */
-/*   Updated: 2020/11/18 07:47:36 by thallard         ###   ########lyon.fr   */
+/*   Updated: 2020/11/18 10:52:15 by thallard         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
-
 
 #include "get_next_line.h"
 
@@ -31,21 +30,19 @@ char    *ft_strjoin(char *s1, char *s2)
     return (res);
 }
 
-int     ft_find_eof(char *buf)
+int     ft_find_eof(char *buf, int size)
 {
     int     i;
 
-    i = 0;
-    if (buf[i] == '\0')
-        return (-1);
-    while (buf[i])
-    {
+    if (size < BUFFER_SIZE)
+        return (0);
+    i = -1;
+    while (buf[++i])
         if (buf[i] == '\n')
+        {
+            buf[i] = '\0';
             return (i);
-        if (buf[i + 1] == '\0')
-            return (i + 1);
-        i++;
-    }
+        }
     return (-1);
 }
 
@@ -54,20 +51,20 @@ int     ft_check_buf(int fd, char *buf, char **line)
     int     eof;
 
     if (line[0][0] == '\0')
-        line[0] = ft_strjoin(line[0], buf);
-
-    if (ft_find_eof(buf) >= 0)
+        *line = ft_strjoin(*line, buf);
+    int size = read(fd, buf, BUFFER_SIZE);
+    eof = ft_find_eof(buf, size);
+    if (eof >= 0)
     {
-        read(fd, buf, BUFFER_SIZE);
-        printf("eof debug %c", buf[ft_find_eof(buf)]);
-        buf[ft_find_eof(buf)] = '\0';
         line[0] = ft_strjoin(line[0], buf);
         return (0);
       
     }
-    else 
+    else if (eof == -1)
     {
-       read(fd, buf, BUFFER_SIZE);
+      
+        line[0] = ft_strjoin(line[0], buf);
+        return (1);
     }
     
     return (1);
@@ -76,16 +73,17 @@ int     ft_check_buf(int fd, char *buf, char **line)
 int     get_next_line(int fd, char **line)
 {
     int             i;
-    char            buf[BUFFER_SIZE + 1];
+    char            buf[BUFFER_SIZE];
     int             j;
 
-    if (!(line[0] = malloc(sizeof(char) * 400)))
+    if (!(line[0] = malloc(sizeof(char) * 100)))
         return (-1);
     j = -1;
     i = -1;
     read(fd, buf, BUFFER_SIZE);
-    while (buf[i] && ++i <= BUFFER_SIZE)
+    while (++i <= BUFFER_SIZE)
     {
+        printf("I : %d", i);
         if (i == BUFFER_SIZE || buf[i + 1] == '\0' || buf[i] == '\n')
         {
             if (ft_check_buf(fd, buf, line) == 1)
@@ -108,6 +106,6 @@ int main()
     int file = open("test.txt", O_RDONLY);
 
     printf("Résultat GNL : %d\n", get_next_line(file, line));
-    printf("Line 0 : %s", line[0]);
+    printf("LIne 0 : %s", line[0]);
    // printf("\nLine 1 : %s", line[1]);
 }
