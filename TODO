@@ -1,0 +1,4 @@
+- Mise du surplus du buffer dans la variable static
+- Utilisation de la variable static pour enchainer l'affichage des lignes
+- Gérer le stdin
+- Gérer les leaks

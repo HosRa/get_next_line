@@ -6,7 +6,7 @@
 /*   By: thallard <thallard@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/11/17 10:21:29 by thallard          #+#    #+#             */
-/*   Updated: 2020/11/18 10:52:15 by thallard         ###   ########lyon.fr   */
+/*   Updated: 2020/11/19 11:45:00 by thallard         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,11 +26,10 @@ char    *ft_strjoin(char *s1, char *s2)
         res[++i] = *s1++;
     while (*s2)
         res[++i] = *s2++;
-    res[i + 1] = '\0';
     return (res);
 }
 
-int     ft_find_eof(char *buf, int size)
+int     ft_find_eof(char buf[BUFFER_SIZE + 1], int size)
 {
     int     i;
 
@@ -41,63 +40,78 @@ int     ft_find_eof(char *buf, int size)
         if (buf[i] == '\n')
         {
             buf[i] = '\0';
+            printf("Trouvé %s\n", buf);
             return (i);
         }
+    printf("ici");
     return (-1);
 }
 
-int     ft_check_buf(int fd, char *buf, char **line)
+int     ft_check_buf(int fd, char buf[BUFFER_SIZE + 1], char **line)
 {
     int     eof;
+    int     size;
 
     if (line[0][0] == '\0')
+    {
+        if (ft_find_eof(buf, BUFFER_SIZE) >= 0)
+        {
+            *line = ft_strjoin(*line, buf);
+            return (0);
+        }
         *line = ft_strjoin(*line, buf);
-    int size = read(fd, buf, BUFFER_SIZE);
-    eof = ft_find_eof(buf, size);
-    if (eof >= 0)
+        return (1);
+    }    
+    size = read(fd, buf, BUFFER_SIZE);
+    if (ft_find_eof(buf, size) >= 0)
     {
-        line[0] = ft_strjoin(line[0], buf);
+        *line = ft_strjoin(*line, buf);
         return (0);
-      
     }
-    else if (eof == -1)
+    else
     {
-      
-        line[0] = ft_strjoin(line[0], buf);
+        printf("Line avant join : %s\n", buf);
+        *line = ft_strjoin(*line, buf);
+        printf("Line après join : %s\n", *line);
         return (1);
     }
-    
     return (1);
 }
 
 int     get_next_line(int fd, char **line)
 {
     int             i;
-    char            buf[BUFFER_SIZE];
-    int             j;
+    char            buf[BUFFER_SIZE + 1];
+    int             util;
+    static int      nblines = 0;
 
-    if (!(line[0] = malloc(sizeof(char) * 100)))
+    if (!(*line = malloc(sizeof(char) * 100)))
         return (-1);
-    j = -1;
     i = -1;
-    read(fd, buf, BUFFER_SIZE);
+    util = read(fd, buf, BUFFER_SIZE);
+    buf[util] = '\0';
+    printf("premier buf %s\n", buf);
     while (++i <= BUFFER_SIZE)
     {
-        printf("I : %d", i);
+       // printf("I : %d\n", i);
         if (i == BUFFER_SIZE || buf[i + 1] == '\0' || buf[i] == '\n')
         {
-            if (ft_check_buf(fd, buf, line) == 1)
+            util = ft_check_buf(fd, buf, line);
+            if (util == 1)
                 i = -1;
+            else if (util == -1)
+            {
+                nblines++;
+                return (0);
+            }
             else
             {
-                return (-4);
+                nblines++;
+                return (1);
             }
         }
-        // je read sur la longueur de buffer_size
-        // ft_check_buf() : fonction qui sert à trouver si y'a un \n ou un \0, si oui alors je strjoin ce que j'ai avec ce qui sort du read juste au dessus
-        // si je trouve pas un des deux, je continue à strjoin tant que je trouve un \n ou \0 dans mon prochain read
     }
-    return (2);
+    return (-1);
 }
 
 int main()
@@ -107,5 +121,6 @@ int main()
 
     printf("Résultat GNL : %d\n", get_next_line(file, line));
     printf("LIne 0 : %s", line[0]);
+    printf("Mon fd : %d", file);
    // printf("\nLine 1 : %s", line[1]);
 }
