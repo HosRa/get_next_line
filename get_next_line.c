@@ -6,112 +6,77 @@
 /*   By: thallard <thallard@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/11/17 10:21:29 by thallard          #+#    #+#             */
-/*   Updated: 2020/11/19 11:45:00 by thallard         ###   ########lyon.fr   */
+/*   Updated: 2020/11/24 18:42:27 by thallard         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-char    *ft_strjoin(char *s1, char *s2)
+char	*cut_nxtline(char *s)
 {
-    char    *res;
-    int     i;
+	int		i;
+	int		j;
+	char	*str;
 
-    if (!s1 || !s2)
-        return (NULL);
-    i = -1;
-    if (!(res = malloc(sizeof(char) * (ft_strlen(s1) + ft_strlen(s2) + 1))))
-        return (NULL);
-    while (*s1)
-        res[++i] = *s1++;
-    while (*s2)
-        res[++i] = *s2++;
-    return (res);
+	i = 0;
+	j = 0;
+	while (s[i] && s[i] != '\n')
+		i++;
+	if (!s[i])
+	{
+
+		return (0);
+	}
+	if (!(str = malloc(sizeof(char) * (ft_strlen(s) - i + 1))))
+		return (0);
+	i++;
+	while (s[i])
+	{
+		str[j] = s[i];
+		i++;
+		j++;
+	}
+	str[j] = '\0';
+	free(s);
+	return (str);
 }
 
-int     ft_find_eof(char buf[BUFFER_SIZE + 1], int size)
+int		get_next_line(int fd, char **line)
 {
-    int     i;
+	char		      *buf;
+	static char	  *save;
+	int			      rtn;
 
-    if (size < BUFFER_SIZE)
-        return (0);
-    i = -1;
-    while (buf[++i])
-        if (buf[i] == '\n')
-        {
-            buf[i] = '\0';
-            printf("Trouvé %s\n", buf);
-            return (i);
-        }
-    printf("ici");
-    return (-1);
+	rtn = 1;
+	if (!line || fd < 0 || BUFFER_SIZE <= 0)
+		return (-1);
+	if (!(buf = malloc(sizeof(char) * (BUFFER_SIZE + 1))))
+		return (-1);
+	while (!ft_isin(save) && rtn != 0)
+	{
+		if ((rtn = read(fd, buf, BUFFER_SIZE)) == -1)
+			return (-1);
+		buf[rtn] = '\0';
+		save = ft_strjoin(save, buf);
+	}
+	*line = ft_setline(save);
+	save = cut_nxtline(save);
+	if (rtn == 0)
+		return (0);
+	return (1);
 }
 
-int     ft_check_buf(int fd, char buf[BUFFER_SIZE + 1], char **line)
+int    main()
 {
-    int     eof;
-    int     size;
-
-    if (line[0][0] == '\0')
+    int fd;
+    char *res[50];
+    fd = open("test.txt", O_RDONLY);
+    while (get_next_line(fd, res) >= 1)
     {
-        if (ft_find_eof(buf, BUFFER_SIZE) >= 0)
-        {
-            *line = ft_strjoin(*line, buf);
-            return (0);
-        }
-        *line = ft_strjoin(*line, buf);
-        return (1);
-    }    
-    size = read(fd, buf, BUFFER_SIZE);
-    if (ft_find_eof(buf, size) >= 0)
-    {
-        *line = ft_strjoin(*line, buf);
-        return (0);
+    printf("Line 0 : %s\n", res[0]);
     }
-    else
-    {
-        printf("Line avant join : %s\n", buf);
-        *line = ft_strjoin(*line, buf);
-        printf("Line après join : %s\n", *line);
-        return (1);
-    }
-    return (1);
-}
-
-int     get_next_line(int fd, char **line)
-{
-    int             i;
-    char            buf[BUFFER_SIZE + 1];
-    int             util;
-    static int      nblines = 0;
-
-    if (!(*line = malloc(sizeof(char) * 100)))
-        return (-1);
-    i = -1;
-    util = read(fd, buf, BUFFER_SIZE);
-    buf[util] = '\0';
-    printf("premier buf %s\n", buf);
-    while (++i <= BUFFER_SIZE)
-    {
-       // printf("I : %d\n", i);
-        if (i == BUFFER_SIZE || buf[i + 1] == '\0' || buf[i] == '\n')
-        {
-            util = ft_check_buf(fd, buf, line);
-            if (util == 1)
-                i = -1;
-            else if (util == -1)
-            {
-                nblines++;
-                return (0);
-            }
-            else
-            {
-                nblines++;
-                return (1);
-            }
-        }
-    }
-    return (-1);
+ 
+   
 }
 
 int main()
