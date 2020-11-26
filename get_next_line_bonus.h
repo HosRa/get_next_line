@@ -1,21 +1,19 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.h                                    :+:      :+:    :+:   */
+/*   get_next_line_bonus.h                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: thallard <thallard@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/11/17 08:34:49 by thallard          #+#    #+#             */
-/*   Updated: 2020/11/26 18:11:14 by thallard         ###   ########lyon.fr   */
+/*   Updated: 2020/11/26 17:38:30 by thallard         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef GET_NEXT_LINE_H
-# define GET_NEXT_LINE_H
+#ifndef GET_NEXT_LINE_BONUS_H
+# define GET_NEXT_LINE_BONUS_H
 
-// # ifndef BUFFER_SIZE
 // # define BUFFER_SIZE 10
-// # endif
 # include <stdlib.h>
 # include <unistd.h>
 # include <stdio.h>
