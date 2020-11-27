@@ -6,7 +6,7 @@
 /*   By: thallard <thallard@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/11/17 10:21:29 by thallard          #+#    #+#             */
-/*   Updated: 2020/11/26 21:56:41 by thallard         ###   ########lyon.fr   */
+/*   Updated: 2020/11/27 02:10:06 by thallard         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,33 +85,22 @@ char	*ft_get_after_eol(char *save)
 int		get_next_line(int fd, char **line)
 {
 	char				buf[BUFFER_SIZE + 1];
-	static char			*save;
+	static char			*save[4096];
 	int					size;
 
 	if (!line || fd < 0 || BUFFER_SIZE <= 0)
 		return (-1);
 	size = 1;
-	if (!save)
-		save = "";
-	while (!(ft_contains_eol(save)))
+	if (!save[fd])
+		save[fd] = ft_strdup("");
+	while (!(ft_contains_eol(save[fd])))
 	{
 		if ((size = read(fd, buf, BUFFER_SIZE)) == -1)
 			return (-1);
 		else if (size == 0)
 			break ;
 		buf[size] = '\0';
-		save = ft_strjoin(save, buf);
+		save[fd] = ft_strjoin(save[fd], buf, 1);
 	}
-	return (ft_create_and_save(&save, line, size));
+	return (ft_create_and_save(&save[fd], line, size));
 }
-
-// int main()
-// {
-//     char *line;
-//     int file = 180;
-
-//     printf("Résultat GNL : %d\n", get_next_line(file, &line));
-//     printf("LIne 0 : %s", line[0]);
-//     printf("Mon fd : %d", file);
-//    // printf("\nLine 1 : %s", line[1]);
-// }
